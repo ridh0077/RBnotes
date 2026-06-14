@@ -1,0 +1,1100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RIDHAM | Multi-Theme Pro Manager</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
+    
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+
+    <!-- PDF Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    <style>
+        /* Smooth Transition Logic */
+        :root {
+            --bg-color: #000000;
+            --header-bg: #000000;
+            --card-bg: #1a1a1a;
+            --accent: #E4FF1A;
+            --text-main: #ffffff;
+            --text-sub: #aaaaaa;
+            --border-color: #2a2a2a;
+            --danger: #ff4757;
+            --wa-green: #25D366;
+            --info: #3498db;
+        }
+
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+            font-family: 'Poppins', sans-serif;
+            transition: background 0.5s ease, color 0.5s ease, border-color 0.5s ease, box-shadow 0.5s ease;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            padding-bottom: 120px;
+            overflow-x: hidden;
+        }
+
+        /* Auth Screen */
+        #authOverlay {
+            position: fixed;
+            inset: 0;
+            background: #000;
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .auth-card {
+            background: #111;
+            border: 2px solid var(--accent);
+            border-radius: 25px;
+            padding: 30px;
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+            box-shadow: 0 0 30px rgba(228, 255, 26, 0.2);
+        }
+        .auth-card h2 {
+            font-family: 'Orbitron';
+            color: var(--accent);
+            margin-bottom: 20px;
+            letter-spacing: 2px;
+        }
+        .auth-card input {
+            width: 100%;
+            padding: 14px;
+            margin-bottom: 15px;
+            background: #222;
+            border: 1px solid #333;
+            border-radius: 12px;
+            color: #fff;
+        }
+        .auth-btn {
+            width: 100%;
+            padding: 14px;
+            background: var(--accent);
+            color: #000;
+            border: none;
+            border-radius: 12px;
+            font-weight: 800;
+            cursor: pointer;
+            text-transform: uppercase;
+        }
+        .auth-toggle {
+            margin-top: 15px;
+            font-size: 12px;
+            color: var(--text-sub);
+            cursor: pointer;
+        }
+
+        /* Header */
+        header {
+            background: var(--header-bg);
+            padding: 12px 20px;
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center;
+            position: sticky; 
+            top: 0; 
+            z-index: 1000;
+            border-bottom: 2px solid var(--accent);
+        }
+
+        .logo-container { 
+            width: 48px; 
+            height: 48px; 
+            border-radius: 50%; 
+            overflow: hidden; 
+            border: 2px solid var(--accent);
+            background: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .logo-container img { width: 100%; height: 100%; object-fit: cover; }
+        
+        .main-title { 
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.5rem; 
+            font-weight: 800; 
+            color: var(--accent); 
+            letter-spacing: 3px; 
+        }
+
+        /* Menu Styling */
+        .menu-container { position: relative; cursor: pointer; padding: 5px; }
+        .dots { font-size: 28px; color: var(--accent); line-height: 1; }
+        
+        .dropdown-menu {
+            display: none; 
+            position: absolute; 
+            right: 0; 
+            top: 45px;
+            background: #1a1a1a; 
+            border-radius: 12px; 
+            width: 240px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8); 
+            overflow: hidden; 
+            border: 1px solid var(--accent);
+        }
+
+        .menu-profile {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            background: rgba(255,255,255,0.05);
+            border-bottom: 1px solid var(--accent);
+            gap: 12px;
+        }
+        .menu-profile img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid var(--accent);
+            object-fit: cover;
+        }
+        .menu-profile span {
+            font-weight: 800;
+            color: #fff;
+            font-size: 14px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            word-break: break-all;
+        }
+
+        .dropdown-menu button { 
+            width: 100%; 
+            padding: 14px; 
+            border: none; 
+            background: none; 
+            text-align: left; 
+            cursor: pointer; 
+            font-size: 14px; 
+            color: #fff; 
+            border-bottom: 1px solid rgba(255,255,255,0.05); 
+        }
+        .dropdown-menu button:hover { background: var(--accent); color: #000; font-weight: bold; }
+
+        .theme-folder { background: #222; }
+        .theme-list { display: none; padding: 5px; background: #000; border-top: 1px solid var(--accent); }
+        .theme-option { 
+            display: flex; 
+            align-items: center; 
+            gap: 10px; 
+            padding: 10px !important; 
+            font-size: 12px !important;
+        }
+        .color-dot { width: 15px; height: 15px; border-radius: 50%; border: 1px solid #fff; }
+
+        /* Search Section */
+        .search-section { 
+            padding: 15px 20px 5px 20px; 
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .search-box-wrapper {
+            position: relative;
+            flex: 1;
+        }
+        .search-box {
+            background: var(--card-bg);
+            border: 1.5px solid var(--accent);
+            border-radius: 12px;
+            padding: 14px 20px;
+            color: var(--text-main);
+            width: 100%;
+            outline: none;
+            font-size: 14px;
+        }
+        .view-sort-btn {
+            background: var(--card-bg);
+            border: 1.5px solid var(--accent);
+            border-radius: 12px;
+            padding: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .view-sort-btn svg {
+            width: 24px;
+            height: 24px;
+            fill: var(--accent);
+        }
+
+        /* VIEW SORT MODAL */
+        .vs-modal {
+            display: none;
+            position: fixed;
+            top: 135px;
+            right: 20px;
+            width: 280px; 
+            background: #1a1a1a;
+            border: 2px solid var(--accent);
+            border-radius: 20px;
+            padding: 15px; 
+            z-index: 1500;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.8);
+        }
+        .vs-section-title {
+            background: #333;
+            color: #fff;
+            padding: 3px 10px;
+            border-radius: 6px;
+            font-size: 10px; 
+            font-weight: 800;
+            display: inline-block;
+            margin-bottom: 12px;
+        }
+        .vs-row {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            overflow-x: auto;
+            padding-bottom: 5px;
+        }
+        .vs-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            min-width: 58px; 
+            cursor: pointer;
+        }
+        .vs-icon-box {
+            background: #2a2a2a;
+            width: 38px; 
+            height: 38px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 1px solid #444;
+        }
+        .vs-item.active .vs-icon-box {
+            border-color: var(--accent);
+            box-shadow: 0 0 8px var(--accent);
+        }
+        .vs-item.active .vs-icon-box svg {
+            fill: var(--accent);
+        }
+        .vs-icon-box svg {
+            width: 18px; 
+            height: 18px;
+            fill: #888;
+        }
+        .vs-label {
+            font-size: 9px; 
+            color: #fff;
+            background: #333;
+            padding: 2px 6px;
+            border-radius: 5px;
+        }
+        .vs-item.active .vs-label {
+            background: #fff;
+            color: #000;
+            font-weight: 800;
+        }
+
+        /* Banner */
+        .banner-container { 
+            padding: 10px 20px; 
+        }
+        .image-banner {
+            width: 100%;
+            height: auto;
+            border-radius: 15px;
+            border: 1.5px solid var(--accent);
+            display: block;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+            object-fit: cover;
+        }
+
+        /* Monthly Headers */
+        .month-header {
+            background: var(--card-bg);
+            padding: 12px 15px; 
+            margin: 25px 0 12px 0;
+            border-radius: 0 12px 12px 0; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center;
+            border-left: 6px solid var(--accent);
+        }
+        .month-title { font-weight: 800; color: var(--accent); text-transform: uppercase; font-size: 14px; letter-spacing: 1px; }
+
+        /* Archive Badge */
+        .archive-mode-indicator {
+            background: var(--danger);
+            color: #fff;
+            text-align: center;
+            font-size: 12px;
+            font-weight: 800;
+            padding: 5px;
+            display: none;
+        }
+
+        /* Cards Core Styles */
+        .container { padding: 10px 15px; max-width: 600px; margin: auto; }
+        .note-card {
+            background: var(--card-bg);
+            border-radius: 18px; 
+            padding: 20px;
+            margin-bottom: 18px; 
+            border: 1px solid var(--border-color);
+            position: relative;
+            overflow: hidden;
+        }
+        .note-card::after {
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 3px; background: var(--accent); border-radius: 18px 18px 0 0;
+        }
+        
+        .model-name { font-size: 1.3rem; font-weight: 800; color: var(--accent); }
+        .cust-info { font-size: 13px; color: var(--text-sub); margin-top: 5px; }
+        .timestamp-badge { color: var(--accent); font-size: 11px; font-weight: 600; }
+
+        .parts-container { margin: 15px 0; background: rgba(0,0,0,0.3); border-radius: 12px; padding: 14px; border: 1px solid var(--border-color); }
+        .part-item { display: flex; justify-content: space-between; padding: 7px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 14px; }
+        
+        .profit-line { 
+            margin-top: 15px; padding-top: 15px; border-top: 1px solid var(--border-color); 
+            display: flex; justify-content: space-between; font-weight: 800; font-size: 1.15rem; 
+        }
+        .profit-amt { color: var(--accent); }
+
+        .actions { margin-top: 20px; display: flex; justify-content: space-between; align-items: center; }
+        .btn-group { display: flex; gap: 18px; }
+        .actions button { background: none; border: none; font-size: 11px; font-weight: 800; cursor: pointer; color: var(--text-sub); text-transform: uppercase; }
+        
+        .share-wa { 
+            background: var(--accent) !important; 
+            color: #000 !important; 
+            padding: 9px 18px; 
+            border-radius: 10px !important; 
+            font-weight: 800 !important;
+        }
+
+        /* EXTRA COMPACT VIEW */
+        .view-compact .note-card { padding: 8px 12px; margin-bottom: 8px; border-radius: 10px; }
+        .view-compact .model-name { font-size: 14px; }
+        .view-compact .cust-info { font-size: 10px; margin-top: 2px; }
+        .view-compact .timestamp-badge { font-size: 9px; }
+        .view-compact .parts-container { margin: 4px 0; padding: 5px 8px; border-radius: 6px; background: rgba(255,255,255,0.02); }
+        .view-compact .part-item { padding: 2px 0; font-size: 11px; border: none; }
+        .view-compact .profit-line { margin-top: 4px; padding-top: 4px; font-size: 12px; border-top: 1px dashed rgba(255,255,255,0.1); }
+        .view-compact .actions { display: none; }
+
+        /* GRID VIEW */
+        .view-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .view-grid .note-card { margin-bottom: 0; padding: 10px; border-radius: 12px; }
+        .view-grid .parts-container { margin: 6px 0; padding: 5px; font-size: 10px; border-radius: 6px; }
+        .view-grid .part-item { padding: 2px 0; border: none; flex-direction: column; align-items: flex-start; }
+        .view-grid .actions, .view-grid .cust-info { display: none; }
+        .view-grid .model-name { font-size: 12px; }
+        .view-grid .profit-line { font-size: 11px; border: none; margin-top: 4px; padding-top: 4px; border-top: 1px dashed var(--border-color); }
+
+        .view-hidden { display: none; }
+
+        /* FAB */
+        .fab { 
+            position: fixed; 
+            right: 25px; 
+            bottom: 95px; 
+            width: 62px; 
+            height: 62px; 
+            background: var(--accent); 
+            color: #000; 
+            border-radius: 18px; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            font-size: 38px; 
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3); 
+            cursor: pointer; 
+            border: 3px solid #000; 
+            z-index: 999; 
+        }
+
+        /* Footer */
+        .footer { 
+            position: fixed; 
+            bottom: 0; 
+            width: 100%; 
+            background: var(--accent); 
+            padding: 18px; 
+            text-align: center; 
+            border-top: 4px solid #fff; 
+            z-index: 1000; 
+        }
+        .total-amount { font-family: 'Orbitron', sans-serif; font-size: 1.25rem; font-weight: 800; color: #000; }
+
+        /* Modals (Centered & Blurred) */
+        .modal { 
+            display: none; 
+            position: fixed; 
+            inset: 0; 
+            background: rgba(0, 0, 0, 0.6); 
+            backdrop-filter: blur(8px); 
+            z-index: 2000; 
+            padding: 20px; 
+            align-items: center; 
+            justify-content: center; 
+        }
+        .modal-content { 
+            background: #000; 
+            padding: 30px; 
+            border-radius: 25px; 
+            width: 100%;
+            max-width: 480px; 
+            border: 2px solid var(--accent); 
+        }
+        label { font-size: 11px; color: var(--accent); text-transform: uppercase; font-weight: 800; display: block; margin-top: 10px; }
+        input, select { 
+            width: 100%; 
+            padding: 14px; 
+            margin-bottom: 5px; 
+            background: #111; 
+            border: 1px solid #333; 
+            border-radius: 12px; 
+            color: white; 
+            outline: none; 
+        }
+        .save-btn { background: var(--accent); color: #000; border: none; width: 100%; padding: 18px; border-radius: 14px; font-weight: 800; cursor: pointer; font-size: 17px; margin-top: 20px; }
+
+        /* Small UI Modals */
+        .small-modal-content {
+            text-align: center;
+            max-width: 320px; 
+            padding: 30px 20px;
+            border-radius: 28px;
+            border: 2px solid var(--accent);
+            background: rgba(13, 13, 13, 0.95);
+        }
+        .modal-icon-circle {
+            width: 65px;
+            height: 65px;
+            border: 2px solid var(--accent);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0 auto 18px;
+        }
+        .modal-icon-circle svg { width: 30px; fill: var(--accent); }
+        .modal-title { font-family: 'Orbitron', sans-serif; font-size: 16px; color: #fff; margin-bottom: 12px; font-weight: 800; }
+        .modal-desc { font-size: 12px; color: var(--text-sub); margin-bottom: 25px; }
+        .modal-actions { display: flex; gap: 12px; }
+        .btn-cancel { flex: 1; background: #1a1a1a; color: #fff; padding: 14px; border-radius: 15px; border: 1px solid #333; font-weight: 700; cursor: pointer; }
+        .btn-confirm { flex: 1; background: var(--accent); color: #000; padding: 14px; border-radius: 15px; border: none; font-weight: 800; cursor: pointer; text-transform: uppercase; }
+
+    </style>
+</head>
+<body id="body">
+
+    <!-- Auth System Overlay -->
+    <div id="authOverlay">
+        <div class="auth-card" id="authBox">
+            <h2 id="authTitle">RIDHAM LOGIN</h2>
+            <input type="email" id="authEmail" placeholder="Email Address">
+            <input type="password" id="authPassword" placeholder="Password">
+            <button class="auth-btn" id="authSubmitBtn" onclick="handleAuth()">LOGIN</button>
+            <div class="auth-toggle" id="authToggle" onclick="toggleAuthMode()">Don't have an account? Sign Up</div>
+            <div id="authError" style="color:red; font-size:10px; margin-top:10px;"></div>
+        </div>
+    </div>
+
+    <div class="archive-mode-indicator" id="archiveIndicator">ARCHIVE VIEW MODE - ONLY SHOWING DELETED RECORDS</div>
+
+    <header>
+        <div class="logo-container">
+            <img src="https://i.postimg.cc/3NWWX76t/logo.jpg" alt="Logo">
+        </div>
+        <div class="main-title">RIDHAM</div>
+        <div class="menu-container" onclick="toggleMenu(event)">
+            <div class="dots">⋮</div>
+            <div class="dropdown-menu" id="dropdown">
+                <div class="menu-profile">
+                    <img src="https://i.postimg.cc/3NWWX76t/logo.jpg" alt="Ridham Logo">
+                    <span id="userDisplayEmail">GUEST</span>
+                </div>
+                <button onclick="toggleThemeList(event)" class="theme-folder">📁 Themes Folder ▶</button>
+                <div id="themeList" class="theme-list">
+                    <button class="theme-option" onclick="applyTheme('rbmods')"><div class="color-dot" style="background:#E4FF1A"></div> RBMods (Yellow)</button>
+                    <button class="theme-option" onclick="applyTheme('electric')"><div class="color-dot" style="background:#B23EFF"></div> Electric Purple</button>
+                    <button class="theme-option" onclick="applyTheme('cyberpunk')"><div class="color-dot" style="background:#fc09ff"></div> Cyberpunk</button>
+                    <button class="theme-option" onclick="applyTheme('sunset')"><div class="color-dot" style="background:#E21C34"></div> Blood Moon</button>
+                    <button class="theme-option" onclick="applyTheme('ocean')"><div class="color-dot" style="background:#0600ff"></div> Ocean Blue</button>
+                    <button class="theme-option" onclick="applyTheme('warm')"><div class="color-dot" style="background:#FBAB7E"></div> Warm Glow</button>
+                    <button class="theme-option" onclick="applyTheme('mint')"><div class="color-dot" style="background:#07D0A4"></div> Mint Fresh</button>
+                    <button class="theme-option" onclick="applyTheme('slate')"><div class="color-dot" style="background:#acb3b8"></div> Dark Slate</button>
+                </div>
+                <button onclick="openPDFModal()">📄 Download PDF (Monthly)</button>
+                <button onclick="toggleArchiveView()" id="archiveToggleBtn">📁 View Archive (Deleted)</button>
+                <button onclick="exportData()">Backup Data</button>
+                <button onclick="logout()" style="color:var(--danger)">Logout Account</button>
+            </div>
+        </div>
+    </header>
+
+    <div class="search-section">
+        <div class="search-box-wrapper">
+            <input type="text" class="search-box" id="searchInput" placeholder="Search customer or model..." oninput="render()">
+        </div>
+        <div class="view-sort-btn" onclick="toggleVSModal(event)">
+            <svg viewBox="0 0 24 24"><path d="M3 18h6v-2H3v2zM3 6v2h18V6H3zm0 7h12v-2H3v2z"/></svg>
+        </div>
+    </div>
+
+    <div class="vs-modal" id="vsModal" onclick="event.stopPropagation()">
+        <div class="vs-section-title">View</div>
+        <div class="vs-row">
+            <div class="vs-item active" id="v-detailed" onclick="changeView('detailed')">
+                <div class="vs-icon-box"><svg viewBox="0 0 24 24"><path d="M3 4h18v2H3V4zm0 7h18v2H3v-2zm0 7h18v2H3v-2z"/></svg></div>
+                <div class="vs-label">Detailed</div>
+            </div>
+            <div class="vs-item" id="v-compact" onclick="changeView('compact')">
+                <div class="vs-icon-box"><svg viewBox="0 0 24 24"><path d="M4 9h16v2H4V9zm0 4h16v2H4v-2z"/></svg></div>
+                <div class="vs-label">Compact</div>
+            </div>
+            <div class="vs-item" id="v-grid" onclick="changeView('grid')">
+                <div class="vs-icon-box"><svg viewBox="0 0 24 24"><path d="M4 4h7v7H4V4zm9 0h7v7h-7V4zm0 9h7v7h-7v-7zm-9 0h7v7H4v-7z"/></svg></div>
+                <div class="vs-label">Grid</div>
+            </div>
+            <div class="vs-item" id="v-hidden" onclick="changeView('hidden')">
+                <div class="vs-icon-box"><svg viewBox="0 0 24 24"><path d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z"/></svg></div>
+                <div class="vs-label">Hidden</div>
+            </div>
+        </div>
+
+        <div class="vs-section-title">Sort</div>
+        <div class="vs-row">
+            <div class="vs-item active" id="s-name" onclick="changeSort('name')">
+                <div class="vs-icon-box"><svg viewBox="0 0 24 24"><path d="M12.75 3h-1.5L4.5 21h1.75l2.3-6h6.9l2.3 6H20L12.75 3zm-3.5 10.5L12 5.5l2.75 8h-5.5z"/></svg></div>
+                <div class="vs-label">Name</div>
+            </div>
+            <div class="vs-item" id="s-size" onclick="changeSort('size')">
+                <div class="vs-icon-box"><svg viewBox="0 0 24 24"><path d="M21 15v2H3v-2h18zM12 7V3H2v4h10zM5 13v-2h14v2H5zm7-2l-1-1h1V7h-1V6h1V5h-1V4h3v1h-1v1h1v1h-1v3h1v1h-3z"/></svg></div>
+                <div class="vs-label">Size</div>
+            </div>
+            <div class="vs-item" id="s-date" onclick="changeSort('date')">
+                <div class="vs-icon-box"><svg viewBox="0 0 24 24"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/></svg></div>
+                <div class="vs-label">Date</div>
+            </div>
+            <div class="vs-item" id="s-desc" onclick="toggleOrder()">
+                <div class="vs-icon-box"><svg viewBox="0 0 24 24"><path d="M3 11h18L12 2 3 11zm0 2l9 9 9-9H3z"/></svg></div>
+                <div class="vs-label">Desc</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="banner-container">
+        <img src="https://i.postimg.cc/R0GynnHP/file-00000000a8f472079e1170f92294e103.png" alt="Banner" class="image-banner">
+    </div>
+
+    <div class="container" id="notesList"></div>
+
+    <button class="fab" onclick="openModal()">+</button>
+
+    <div class="footer">
+        <div class="total-amount" id="grandTotal">TOTAL PROFIT: ₹0</div>
+    </div>
+
+    <div class="modal" id="noteModal">
+        <div class="modal-content">
+            <h2 id="modalTitle" style="color:var(--accent); text-align:center;">ENTRY</h2>
+            <input type="hidden" id="editIndex">
+            
+            <label>Service Date</label>
+            <input type="date" id="serviceDate">
+
+            <label>Customer Name</label>
+            <input type="text" id="custName" placeholder="Full Name">
+            <input type="number" id="custPhone" placeholder="WhatsApp No">
+            
+            <label>Device Details</label>
+            <input type="text" id="model" placeholder="Model Name">
+            <input type="text" id="shop" placeholder="Shop Name">
+            
+            <label>Parts & Items</label>
+            <div id="partInputsContainer"></div>
+            <button onclick="addPartInputRow()" style="background:none; border:1px dashed var(--accent); color:var(--accent); width:100%; padding:10px; border-radius:10px; margin-bottom:10px; cursor:pointer;">+ Add Item</button>
+            
+            <label>Final Billing</label>
+            <input type="number" id="paid" placeholder="Total Paid (₹)">
+            
+            <button class="save-btn" onclick="saveData()">CONFIRM & SAVE TO CLOUD</button>
+            <button onclick="closeModal()" style="width:100%; background:none; border:none; color:#555; margin-top:15px; cursor:pointer;">Cancel</button>
+        </div>
+    </div>
+
+    <div class="modal" id="deleteModal" style="display: none; align-items: center; justify-content: center;">
+        <div class="small-modal-content">
+            <div class="modal-icon-circle" style="border-color: var(--danger);">
+                <svg viewBox="0 0 24 24" style="fill: var(--danger);"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+            </div>
+            <div class="modal-title">ARCHIVE ENTRY?</div>
+            <div class="modal-desc">This data will be moved to the Archive folder on Cloud.</div>
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick="closeDeleteModal()">CANCEL</button>
+                <button class="btn-confirm" id="confirmDelBtn">MOVE</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="pdfModal" style="display: none;">
+        <div class="small-modal-content">
+            <div class="modal-icon-circle">
+                <svg viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
+            </div>
+            <div class="modal-title">GENERATE PDF</div>
+            <div class="modal-desc">Select month for the report</div>
+            <select id="pdfMonthSelect"></select>
+            <div class="modal-actions" style="margin-top: 20px;">
+                <button class="btn-cancel" onclick="closePDFModal()">CANCEL</button>
+                <button class="btn-confirm" onclick="triggerPDFDownload()">DOWNLOAD</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- FIREBASE CONFIG (INTEGRATED) ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyCVF8HoXlz_KP5HzvyXm6c-pcmgYbwlRIQ",
+            authDomain: "rbnotes-192b5.firebaseapp.com",
+            projectId: "rbnotes-192b5",
+            storageBucket: "rbnotes-192b5.firebasestorage.app",
+            messagingSenderId: "952806658735",
+            appId: "1:952806658735:web:3984cc8678d9f3c16eba5a"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        let repairs = [];
+        let currentView = 'detailed';
+        let currentSort = 'name';
+        let sortOrder = 'asc';
+        let itemToDeleteIndex = -1;
+        let isArchiveView = false;
+        let isSignupMode = false;
+        let currentUser = null;
+
+        // --- AUTH LOGIC ---
+        function toggleAuthMode() {
+            isSignupMode = !isSignupMode;
+            document.getElementById('authTitle').innerText = isSignupMode ? "CREATE ACCOUNT" : "RIDHAM LOGIN";
+            document.getElementById('authSubmitBtn').innerText = isSignupMode ? "SIGN UP" : "LOGIN";
+            document.getElementById('authToggle').innerText = isSignupMode ? "Already have an account? Login" : "Don't have an account? Sign Up";
+        }
+
+        async function handleAuth() {
+            const email = document.getElementById('authEmail').value;
+            const password = document.getElementById('authPassword').value;
+            const errorDiv = document.getElementById('authError');
+            errorDiv.innerText = "";
+
+            if(!email || !password) return alert("Please fill all fields");
+
+            try {
+                if(isSignupMode) {
+                    await auth.createUserWithEmailAndPassword(email, password);
+                } else {
+                    await auth.signInWithEmailAndPassword(email, password);
+                }
+            } catch (error) {
+                errorDiv.innerText = error.message;
+            }
+        }
+
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                currentUser = user;
+                document.getElementById('authOverlay').style.display = 'none';
+                document.getElementById('userDisplayEmail').innerText = user.email;
+                syncFromCloud();
+            } else {
+                currentUser = null;
+                document.getElementById('authOverlay').style.display = 'flex';
+                repairs = [];
+                render();
+            }
+        });
+
+        function logout() {
+            auth.signOut();
+        }
+
+        async function syncFromCloud() {
+            if(!currentUser) return;
+            db.collection("repairs_data").doc(currentUser.uid).onSnapshot((doc) => {
+                if (doc.exists) {
+                    repairs = doc.data().repairs || [];
+                    render();
+                } else {
+                    repairs = [];
+                    render();
+                }
+            });
+        }
+
+        async function syncToCloud() {
+            if(!currentUser) return;
+            await db.collection("repairs_data").doc(currentUser.uid).set({
+                repairs: repairs
+            });
+        }
+
+        // --- THEME & UI LOGIC ---
+        const themes = {
+            rbmods: { bg: "#000", header: "#000", card: "#1a1a1a", accent: "#E4FF1A", text: "#fff", border: "#2a2a2a" },
+            electric: { bg: "#1E1E1E", header: "#1E1E1E", card: "#2d2d2d", accent: "#B23EFF", text: "#fff", border: "#3d3d3d" },
+            cyberpunk: { bg: "#000", header: "#000", card: "#111", accent: "#fc09ff", text: "#fff", border: "#04e0e3" },
+            sunset: { bg: "#500B28", header: "#500B28", card: "#6b0f35", accent: "#E21C34", text: "#fff", border: "#801240" },
+            ocean: { bg: "#020a1a", header: "#020a1a", card: "#0a162e", accent: "#00F4FD", text: "#fff", border: "#0600ff" },
+            warm: { bg: "#2b1b0a", header: "#2b1b0a", card: "#3d2a14", accent: "#FBAB7E", text: "#fff", border: "#F7CE68" },
+            mint: { bg: "#051a14", header: "#051a14", card: "#0c2b21", accent: "#07D0A4", text: "#fff", border: "#C2FCD4" },
+            slate: { bg: "#273748", header: "#1e2a38", card: "#33475c", accent: "#acb3b8", text: "#fff", border: "#445d78" }
+        };
+
+        function toggleMenu(e) { 
+            e.stopPropagation(); 
+            const d = document.getElementById('dropdown'); 
+            d.style.display = (d.style.display === 'block') ? 'none' : 'block'; 
+        }
+
+        function toggleVSModal(e) {
+            e.stopPropagation();
+            const m = document.getElementById('vsModal');
+            m.style.display = (m.style.display === 'block') ? 'none' : 'block';
+        }
+
+        function toggleThemeList(e) {
+            e.stopPropagation();
+            const list = document.getElementById('themeList');
+            list.style.display = (list.style.display === 'block') ? 'none' : 'block';
+        }
+
+        function applyTheme(name) {
+            const t = themes[name];
+            const root = document.documentElement;
+            root.style.setProperty('--bg-color', t.bg);
+            root.style.setProperty('--header-bg', t.header);
+            root.style.setProperty('--card-bg', t.card);
+            root.style.setProperty('--accent', t.accent);
+            root.style.setProperty('--text-main', t.text);
+            root.style.setProperty('--border-color', t.border);
+            localStorage.setItem('ridham_theme', name);
+        }
+
+        function changeView(view) {
+            currentView = view;
+            document.querySelectorAll('.vs-item[id^="v-"]').forEach(el => el.classList.remove('active'));
+            document.getElementById('v-' + view).classList.add('active');
+            render();
+        }
+
+        function changeSort(sort) {
+            currentSort = sort;
+            document.querySelectorAll('.vs-item[id^="s-"]').forEach(el => el.classList.remove('active'));
+            document.getElementById('s-' + sort).classList.add('active');
+            render();
+        }
+
+        function toggleOrder() {
+            sortOrder = (sortOrder === 'asc') ? 'desc' : 'asc';
+            render();
+        }
+
+        function openModal(index = -1) {
+            const m = document.getElementById('noteModal');
+            m.style.display = 'flex';
+            document.getElementById('partInputsContainer').innerHTML = "";
+            
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('serviceDate').value = today;
+
+            if(index > -1) {
+                const r = repairs[index];
+                document.getElementById('editIndex').value = index;
+                document.getElementById('custName').value = r.custName || "";
+                document.getElementById('custPhone').value = r.custPhone || "";
+                document.getElementById('model').value = r.model;
+                document.getElementById('shop').value = r.shop;
+                document.getElementById('paid').value = r.paid;
+
+                const dateParts = r.date.split('/');
+                if(dateParts.length === 3) {
+                    const isoDate = `${dateParts[2]}-${dateParts[1]}-${dateParts[0]}`;
+                    document.getElementById('serviceDate').value = isoDate;
+                }
+
+                r.parts.forEach(p => addPartInputRow(p.name, p.price));
+            } else {
+                document.getElementById('editIndex').value = "-1";
+                document.getElementById('custName').value = ""; 
+                document.getElementById('custPhone').value = "";
+                document.getElementById('model').value = ""; 
+                document.getElementById('shop').value = ""; 
+                document.getElementById('paid').value = "";
+                addPartInputRow();
+            }
+        }
+
+        function closeModal() { document.getElementById('noteModal').style.display = 'none'; }
+
+        function deleteItem(index) {
+            itemToDeleteIndex = index;
+            document.getElementById('deleteModal').style.display = 'flex';
+        }
+
+        function closeDeleteModal() {
+            document.getElementById('deleteModal').style.display = 'none';
+            itemToDeleteIndex = -1;
+        }
+
+        document.getElementById('confirmDelBtn').onclick = async function() {
+            if (itemToDeleteIndex > -1) {
+                repairs[itemToDeleteIndex].archived = true;
+                await syncToCloud();
+                render();
+                closeDeleteModal();
+            }
+        };
+
+        function openPDFModal() {
+            const activeRepairs = repairs.filter(r => !r.archived);
+            const monthList = [...new Set(activeRepairs.map(r => r.monthKey))];
+            if(monthList.length === 0) return alert("No active data available for PDF!");
+            
+            const select = document.getElementById('pdfMonthSelect');
+            select.innerHTML = monthList.map(m => `<option value="${m}">${m}</option>`).join('');
+            document.getElementById('pdfModal').style.display = 'flex';
+        }
+
+        function closePDFModal() { document.getElementById('pdfModal').style.display = 'none'; }
+
+        // --- PDF GENERATION & DOWNLOAD LOGIC ---
+        function triggerPDFDownload() {
+            const selectedMonth = document.getElementById('pdfMonthSelect').value;
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            const monthData = repairs.filter(r => r.monthKey === selectedMonth && !r.archived);
+            
+            // Header
+            doc.setFontSize(22); 
+            doc.setTextColor(40, 40, 40);
+            doc.text("RIDHAM REPAIR REPORT", 105, 15, null, null, "center");
+            
+            doc.setFontSize(12);
+            doc.text("Month: " + selectedMonth, 105, 22, null, null, "center");
+            doc.text("Generated on: " + new Date().toLocaleDateString(), 105, 28, null, null, "center");
+
+            const rows = []; 
+            let totalProfit = 0;
+
+            monthData.forEach(r => {
+                const profit = (r.paid || 0) - (r.totalCost || 0);
+                totalProfit += profit;
+                const workDetails = r.parts.map(p => p.name + " (" + p.price + ")").join(", ");
+                rows.push([r.date, r.model, r.custName || 'Walk-in', workDetails, r.paid, profit]);
+            });
+
+            doc.autoTable({
+                startY: 35, 
+                head: [['Date', 'Model', 'Customer', 'Work Details', 'Paid (Rs)', 'Profit (Rs)']],
+                body: rows, 
+                theme: 'grid', 
+                headStyles: { fillColor: [228, 255, 26], textColor: [0, 0, 0], fontStyle: 'bold' },
+                styles: { fontSize: 9 },
+                columnStyles: { 3: { cellWidth: 50 } }
+            });
+
+            const finalY = doc.lastAutoTable.finalY || 35;
+            doc.setFontSize(14);
+            doc.setTextColor(0, 100, 0);
+            doc.text("TOTAL MONTHLY PROFIT: Rs. " + totalProfit, 15, finalY + 15);
+            
+            // Core Download Action
+            doc.save(`Ridham_Report_${selectedMonth.replace(/\s/g, '_')}.pdf`);
+            
+            closePDFModal();
+        }
+
+        function toggleArchiveView() {
+            isArchiveView = !isArchiveView;
+            document.getElementById('archiveIndicator').style.display = isArchiveView ? 'block' : 'none';
+            document.getElementById('archiveToggleBtn').innerText = isArchiveView ? '📁 View Main List' : '📁 View Archive (Deleted)';
+            render();
+        }
+
+        async function restoreItem(index) {
+            repairs[index].archived = false;
+            await syncToCloud();
+            render();
+        }
+
+        async function permanentDelete(index) {
+            if(confirm("Permanently delete this from Cloud?")) {
+                repairs.splice(index, 1);
+                await syncToCloud();
+                render();
+            }
+        }
+
+        function addPartInputRow(name = "", price = "") {
+            const div = document.createElement('div');
+            div.style.display = "flex"; div.style.gap = "10px"; div.style.marginBottom = "10px";
+            div.innerHTML = `<input type="text" placeholder="Part" class="p-name" value="${name}" style="flex:2; margin:0">
+                             <input type="number" placeholder="₹" class="p-price" value="${price}" style="flex:1; margin:0">`;
+            document.getElementById('partInputsContainer').appendChild(div);
+        }
+
+        async function saveData() {
+            const model = document.getElementById('model').value;
+            const paid = parseFloat(document.getElementById('paid').value) || 0;
+            const index = parseInt(document.getElementById('editIndex').value);
+            const rawDate = document.getElementById('serviceDate').value;
+            
+            if(!model || !rawDate) return alert("Model name and Date are needed!");
+
+            let parts = []; let totalCost = 0;
+            document.querySelectorAll('.p-name').forEach((input, i) => {
+                const pPrice = parseFloat(document.querySelectorAll('.p-price')[i].value) || 0;
+                if(input.value) { parts.push({ name: input.value, price: pPrice }); totalCost += pPrice; }
+            });
+
+            const selectedDate = new Date(rawDate);
+            const formattedDate = selectedDate.toLocaleDateString('en-GB'); 
+            const monthKey = selectedDate.toLocaleString('default', { month: 'long', year: 'numeric' });
+
+            const itemData = {
+                custName: document.getElementById('custName').value,
+                custPhone: document.getElementById('custPhone').value,
+                model, shop: document.getElementById('shop').value, parts, totalCost, paid,
+                date: formattedDate,
+                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                monthKey: monthKey,
+                timestamp: selectedDate.getTime(),
+                archived: false
+            };
+
+            if(index === -1) repairs.unshift(itemData);
+            else repairs[index] = itemData;
+
+            await syncToCloud();
+            render(); closeModal();
+        }
+
+        function shareWhatsApp(i) {
+            const r = repairs[i];
+            let partsTxt = r.parts.map(p => `• ${p.name}: ₹${p.price}`).join('\n');
+            let text = `*RIDHAM REPAIR BILL*\n*Model:* ${r.model}\n*Date:* ${r.date}\n------------------\n*Work:*\n${partsTxt}\n------------------\n*Total:* ₹${r.paid}`;
+            window.open(`https://wa.me/${r.custPhone}?text=${encodeURIComponent(text)}`, '_blank');
+        }
+
+        function render() {
+            const list = document.getElementById('notesList');
+            const searchInput = document.getElementById('searchInput');
+            if(!list || !searchInput) return;
+            
+            const search = searchInput.value.toLowerCase();
+            list.innerHTML = ""; list.className = "container view-" + currentView;
+            let grandTotal = 0;
+
+            let filtered = repairs.filter(r => {
+                const matches = (r.model && r.model.toLowerCase().includes(search)) || (r.custName && r.custName.toLowerCase().includes(search));
+                return isArchiveView ? (matches && r.archived === true) : (matches && !r.archived);
+            });
+
+            filtered.sort((a, b) => {
+                let valA, valB;
+                if (currentSort === 'name') { valA = (a.model || "").toLowerCase(); valB = (b.model || "").toLowerCase(); }
+                else if (currentSort === 'size') { valA = a.paid || 0; valB = b.paid || 0; }
+                else { valA = a.timestamp || 0; valB = b.timestamp || 0; }
+                return sortOrder === 'asc' ? (valA > valB ? 1 : -1) : (valA < valB ? 1 : -1);
+            });
+
+            const groups = filtered.reduce((acc, curr) => {
+                if (!acc[curr.monthKey]) acc[curr.monthKey] = [];
+                acc[curr.monthKey].push(curr); return acc;
+            }, {});
+
+            const sortedMonths = Object.keys(groups).sort((a, b) => {
+                return new Date(b) - new Date(a); 
+            });
+
+            for (const month of sortedMonths) {
+                let monthProfit = 0;
+                list.innerHTML += `<div class="month-header"><span class="month-title">${month}</span><span class="month-sum" id="m-${month.replace(/\s/g, '')}">Total: ₹0</span></div>`;
+                
+                groups[month].forEach((r) => {
+                    const profit = (r.paid || 0) - (r.totalCost || 0);
+                    monthProfit += profit; grandTotal += profit;
+                    const idx = repairs.indexOf(r);
+                    list.innerHTML += `
+                        <div class="note-card" onclick="if(!isArchiveView && currentView !== 'detailed') openModal(${idx})">
+                            <div class="card-info-row" style="display:flex; justify-content:space-between; align-items:start;">
+                                <div><div class="model-name">${r.model}</div><div class="cust-info">${r.custName || 'Walk-in'}</div></div>
+                                <div class="timestamp-badge">${r.date}</div>
+                            </div>
+                            <div class="parts-container">${r.parts ? r.parts.map(p => `<div class="part-item"><span>${p.name}</span><span>₹${p.price}</span></div>`).join('') : ''}</div>
+                            <div class="profit-line"><span>PAID: ₹${r.paid}</span><span>SAVINGS: <span class="profit-amt">₹${profit}</span></span></div>
+                            <div class="actions">
+                                ${isArchiveView ? `
+                                    <button style="background:var(--info)!important; color:#fff!important; padding:9px 18px; border-radius:10px; font-weight:800;" onclick="event.stopPropagation(); restoreItem(${idx})">RESTORE</button>
+                                    <button style="color:var(--danger)" onclick="event.stopPropagation(); permanentDelete(${idx})">DEL</button>
+                                ` : `
+                                    <button class="share-wa" onclick="event.stopPropagation(); shareWhatsApp(${idx})">SHARE</button>
+                                    <div class="btn-group">
+                                        <button onclick="event.stopPropagation(); openModal(${idx})">EDIT</button>
+                                        <button style="color:var(--danger)" onclick="event.stopPropagation(); deleteItem(${idx})">DEL</button>
+                                    </div>
+                                `}
+                            </div>
+                        </div>`;
+                });
+                if(document.getElementById(`m-${month.replace(/\s/g, '')}`))
+                    document.getElementById(`m-${month.replace(/\s/g, '')}`).innerText = `Total: ₹${monthProfit}`;
+            }
+            document.getElementById('grandTotal').innerText = `TOTAL PROFIT: ₹${grandTotal}`;
+        }
+
+        function exportData() {
+            const blob = new Blob([JSON.stringify(repairs)], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a'); a.href = url; a.download = "ridham_backup.json"; a.click();
+        }
+
+        window.onclick = (e) => {
+            if (e.target.className === 'modal') { closeModal(); closeDeleteModal(); closePDFModal(); }
+            if (!e.target.closest('.menu-container')) {
+                document.getElementById('dropdown').style.display = 'none';
+                document.getElementById('themeList').style.display = 'none';
+            }
+            if (!e.target.closest('.view-sort-btn') && !e.target.closest('.vs-modal')) {
+                document.getElementById('vsModal').style.display = 'none';
+            }
+        };
+
+        const savedTheme = localStorage.getItem('ridham_theme') || 'rbmods';
+        applyTheme(savedTheme);
+    </script>
+</body>
+</html>
